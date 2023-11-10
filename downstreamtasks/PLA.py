@@ -1,32 +1,46 @@
 from Utils import *
 import ast
 
+# Define the modalities and select one
 modal = ['sequence', 'graph', 'point_cloud', 'multimodal']
 modal_id = 1
+
+# Define the data folder
 data_folder = '/downstreamtasks/data/KIBA/'
 
-df = pd.read_csv(f'{data_folder}label.csv')
+# Read the label CSV file
+df = pd.read_csv(f'{data_folder}/label.csv')
+print("Number of samples:", len(df))
+
+# Load feature data from the selected modality
 with open(f'{data_folder}{modal[modal_id]}.pkl', 'rb') as f:
     X = np.array(pickle.load(f))
+
+# Load labels
 y = df['label'].to_numpy()
 
+# Load test and train IDs from the fold setting
 with open(f'{data_folder}folds/test_fold_setting.txt', 'r') as f:
     test_ids_str = f.read()
     test_ids = ast.literal_eval(test_ids_str)
     train_ids = np.setdiff1d(np.arange(X.shape[0]), test_ids)
 
-# Print the sizes of the training and validation sets
+# Print the sizes of the training and test sets
 print(f'Size of Training Set: {len(train_ids)} samples')
 print(f'Size of Test Set: {len(test_ids)} samples')
+
+# Split the data into training and test sets
 X_train = X[train_ids]
 y_train = y[train_ids]
 
 X_test = X[test_ids]
 y_test = y[test_ids]
 
+# Convert data to PyTorch tensors
 X_train, y_train = torch.tensor(X_train, dtype=torch.float32), torch.tensor(y_train, dtype=torch.float32)
 X_test, y_test = torch.tensor(X_test, dtype=torch.float32), torch.tensor(y_test, dtype=torch.float32)
 
+# Define the Gaussian Process model
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, X_train, y_train, likelihood):
         super(ExactGPModel, self).__init__(X_train, y_train, likelihood)
@@ -37,35 +51,45 @@ class ExactGPModel(gpytorch.models.ExactGP):
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+
+# Create a Gaussian likelihood for the model
 likelihood = gpytorch.likelihoods.GaussianLikelihood()
+
+# Initialize the Gaussian Process model
 model = ExactGPModel(X_train, y_train, likelihood)
 
 def train():
+    # Define optimizer and loss
     optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
+    # Train the model
     training_iter = 100
     for i in range(training_iter):
         model.train()
         likelihood.train()
         optimizer.zero_grad()
-        # Output from model
+        # Compute the output from the model
         output = model(X_train)
-        # Calc loss and backprop gradients
+        # Calculate the loss and backpropagate gradients
         loss = -mll(output, y_train)
         loss.backward()
-        optimizer.step()  
+        optimizer.step()
         print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
-        i + 1, training_iter, loss.item(),
-        model.covar_module.base_kernel.lengthscale.item(),
-        model.likelihood.noise.item()
+            i + 1, training_iter, loss.item(),
+            model.covar_module.base_kernel.lengthscale.item(),
+            model.likelihood.noise.item()
         ))
     
+    # Save the trained model state
     torch.save(model.state_dict(), f'{data_folder}/{modal[modal_id]}_model_state.pth')
 
 def test():
-    state_dict = torch.load( f'{data_folder}{modal[modal_id]}_model_state.pth')
+    # Load the trained model state
+    state_dict = torch.load(f'{data_folder}/{modal[modal_id]}_model_state.pth')
     model.load_state_dict(state_dict)
 
+    # Evaluate the model on the test set
     model.eval()
     likelihood.eval()
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
@@ -79,6 +103,7 @@ def test():
 
         lower, upper = observed_pred.confidence_region()
 
+        # Print evaluation metrics
         print("Mean Squared Error:", mse)
         print("Mean Absolute Error:", mae)
         print("Root Mean Square Error: ", sqrt(mse))

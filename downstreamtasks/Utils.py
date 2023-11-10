@@ -6,7 +6,6 @@ import pickle
 from math import sqrt
 from scipy.stats import spearmanr, pearsonr
 from lifelines.utils import concordance_index
-
 import torch
 from tqdm import tqdm
 import networkx as nx
@@ -18,7 +17,6 @@ import os
 import glob
 import gpytorch
 import h5py
-
 from sklearn.metrics import roc_auc_score
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import LabelEncoder
@@ -26,26 +24,20 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, confusion_matrix, accuracy_score
 from sklearn.utils import shuffle
 from sklearn.model_selection import GroupKFold
-
 from rdkit import Chem
 from rdkit.Chem import AllChem
-
 from torch_geometric.utils import train_test_split_edges
 from torch_geometric.nn import TopKPooling
 from torch_geometric.utils import negative_sampling
 from torch_geometric.data import Data
-
 from model.Auto_Fusion import *
 from model.ESM import *
 from model.VGAE import *
 from model.PAE import *
-
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-
 import xgboost as xgb
 from xgboost import XGBClassifier
-
 from Bio.PDB import PDBParser, PPBuilder, Polypeptide
 parser = PDBParser(QUIET=True)
 ppb = PPBuilder()
@@ -310,14 +302,6 @@ def get_rmse(y,f):
 def get_mae(y,f):
     mae = (np.abs(y-f)).mean()
     return mae
-
-def get_sd(y,f):
-    f,y = f.reshape(-1,1),y.reshape(-1,1)
-    lr = LinearRegression()
-    lr.fit(f,y)
-    y_ = lr.predict(f)
-    sd = (((y - y_) ** 2).sum() / (len(y) - 1)) ** 0.5
-    return sd
 
 def get_pearson(y,f):
     rp = pearsonr(y,f)[0]

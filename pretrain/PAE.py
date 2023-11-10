@@ -1,6 +1,4 @@
 import warnings
-# Disable DeepSNAP warnings for clearer printout in the tutorial
-warnings.filterwarnings("ignore")
 import pickle
 import math
 
@@ -10,8 +8,11 @@ import torch.optim as optim
 from torch.utils.data import Dataset
 
 from tensorboardX import SummaryWriter
+
+# Create a summary writer for logging
 writer = SummaryWriter(log_dir="pretrain/log/PAE")
 
+# Define a custom dataset class for handling point cloud data
 class PointClouds(Dataset):
     def __init__(self, dataset):
         self.dataset = dataset
@@ -22,12 +23,15 @@ class PointClouds(Dataset):
     def __getitem__(self, i):
         return self.dataset[i]
 
+# Load the point cloud data
 with open('pretrain/data/swissprot/pointcloud.pkl', 'rb') as f:
     print("Loading data ...")
     dataset = pickle.load(f)
 print("Data loaded successfully.")
 
+# Create instances of the custom dataset class for train, validation, and test sets
 dataset = PointClouds(dataset)
+
 # Split the dataset into train, validation, and test sets
 train_ratio = 0.7
 valid_ratio = 0.1
@@ -46,10 +50,13 @@ train_dataset, valid_dataset, test_dataset = torch.utils.data.random_split(
 )
 
 batch_size = 256
+
+# Create data loaders for train, validation, and test sets
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
+# Define a custom Chamfer Distance loss function
 class ChamferDistance(nn.Module):
 
     def __init__(self):
@@ -59,7 +66,7 @@ class ChamferDistance(nn.Module):
         x = x.unsqueeze(3)  # shape [b, d, n, 1]
         y = y.unsqueeze(2)  # shape [b, d, 1, m]
 
-        # compute pairwise l2-squared distances
+        # Compute pairwise L2-squared distances
         d = torch.pow(x - y, 2)  # shape [b, d, n, m]
         d = d.sum(1)  # shape [b, n, m]
 
@@ -69,6 +76,10 @@ class ChamferDistance(nn.Module):
         distance = min_for_each_x_i.sum(1) + min_for_each_y_j.sum(1)  # shape [b]
         return distance.mean(0)
 
+# Create an optimizer for the PAE (Point Cloud Auto-Encoder) model
+optimizer = optim.Adam(pae_model.parameters(), lr=0.001)
+
+# Function to apply random rotations to input data
 def random_rotation_matrix(batch_size):
     # Generate random angles for rotation
     angles = torch.rand((batch_size, 3)) * 2 * math.pi
@@ -95,49 +106,54 @@ def random_rotation_matrix(batch_size):
 
     return rotation_matrices
 
+# Initialize the Chamfer Distance loss
 chamfer_distance = ChamferDistance()
-optimizer = optim.Adam(pae_model.parameters(), lr=0.001)
 
+# Training function
 def train():
-  pae_model.train()
-  total_loss = 0.0
+    pae_model.train()
+    total_loss = 0.0
 
-  for data in train_loader:
-      data = data.to(device)
-      rotation_matrix = random_rotation_matrix(data.size(0)).to(device)
-      data = torch.matmul(rotation_matrix, data)
+    for data in train_loader:
+        data = data.to(device)
+        rotation_matrix = random_rotation_matrix(data.size(0)).to(device)
+        data = torch.matmul(rotation_matrix, data)
 
-      optimizer.zero_grad()
-      encoding = pae_model.encode(data)
+        optimizer.zero_grad()
+        encoding = pae_model.encode(data)
 
-      restoration = pae_model.decode(encoding)
-      loss = chamfer_distance(data, restoration)
+        restoration = pae_model.decode(encoding)
+        loss = chamfer_distance(data, restoration)
 
-      loss.backward()
-      optimizer.step()
+        loss.backward()
+        optimizer.step()
 
-      total_loss += loss.item()
+        total_loss += loss.item()
 
-  average_loss = total_loss / len(train_loader)
-  return average_loss
+    average_loss = total_loss / len(train_loader)
+    return average_loss
 
+# Validation function
 def validation():
-  pae_model.eval()
-  total_val_loss = 0.0
+    pae_model.eval()
+    total_val_loss = 0.0
 
-  with torch.no_grad():
-      for data in valid_loader:
-          data = data.to(device)
-          encoding = pae_model.encode(data)
-          restoration = pae_model.decode(encoding)
+    with torch.no_grad():
+        for data in valid_loader:
+            data = data.to(device)
+            encoding = pae_model.encode(data)
+            restoration = pae_model.decode(encoding)
 
-          # Calculate the Chamfer distance loss on the validation set
-          val_loss = chamfer_distance(data, restoration)
-          total_val_loss += val_loss.item()
-  average_val_loss = total_val_loss / len(valid_loader)
-  return average_val_loss
+            # Calculate the Chamfer distance loss on the validation set
+            val_loss = chamfer_distance(data, restoration)
+            total_val_loss += val_loss.item()
+
+    average_val_loss = total_val_loss / len(valid_loader)
+    return average_val_loss
 
 num_epochs = 100
+
+# Training loop
 for epoch in range(num_epochs):
     train_loss = train()
     val_loss = validation()
@@ -145,10 +161,14 @@ for epoch in range(num_epochs):
     writer.add_scalar('Loss/valid', val_loss, epoch)
     print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
 
+# Define the file path for saving the model
 PATH = "/model/PAE.pt"
+
+# Save the PAE model
 torch.save(pae_model, PATH)
 print("Model saved")
 
+# Testing function
 def test():
     pae_model.eval()
     total_test_loss = 0.0
