@@ -3,13 +3,21 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import random
-import os
 random.seed(0)
-import pickle
-from model.VGAE import *
-from torch_geometric.data import DataLoader
-from tensorboardX import SummaryWriter
 
+import pickle
+from torch_geometric.data import DataLoader
+
+import os
+import sys
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+model_path = f"{script_directory}/../"
+sys.path.append(model_path)
+
+from model.VGAE import *
+
+from tensorboardX import SummaryWriter
 # Create a summary writer for logging
 writer = SummaryWriter(log_dir="/log/VGAE")
 

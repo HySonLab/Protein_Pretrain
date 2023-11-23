@@ -1,14 +1,24 @@
 import warnings
 # Disable DeepSNAP warnings for clearer printout in the tutorial
 warnings.filterwarnings("ignore")
+
 import pickle
-from model.Auto_Fusion import *
+
 from tensorboardX import SummaryWriter
 from torch_geometric.data import DataLoader
 import torch.optim as optim
 from torch.utils.data import Dataset
-import os
 
+import os
+import sys
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+model_path = f"{script_directory}/../"
+sys.path.append(model_path)
+
+from model.Auto_Fusion import *
+
+# Create a summary writer for logging
 writer = SummaryWriter(log_dir="/log/Fusion")
 
 class MultimodalDataset(Dataset):
