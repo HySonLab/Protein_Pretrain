@@ -45,7 +45,7 @@ y_test3 = label_encoder.transform(y_test3)
 def train():
     # Train a multi-class classification model
     xgb_model = XGBClassifier(learning_rate=0.1, n_estimators=1000, max_depth=5, random_state=42, tree_method='gpu_hist', objective='multi:softmax')
-    xgb_model.fit(X_train, y_train, eval_metric='mlogloss', eval_set=[(X_validation, y_validation)], early_stopping_rounds=10, verbose=1)
+    xgb_model.fit(X_train, y_train, eval_metric='mlogloss', eval_set=[(X_train, y_train), (X_validation, y_validation)], early_stopping_rounds=10, verbose=1)
     
     # Save the trained model
     xgb_model.save_model(f"{data_folder}{modal[modal_id]}_model.json")

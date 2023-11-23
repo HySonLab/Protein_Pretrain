@@ -25,7 +25,7 @@ def train():
         
         # Define and train the XGBoost classifier
         model = XGBClassifier(learning_rate=0.1, n_estimators=1000, max_depth=5, random_state=42, tree_method='gpu_hist', objective="binary:logistic")
-        model.fit(X_train, y_train, eval_metric='logloss', eval_set=[(X_test, y_test)], early_stopping_rounds=10, verbose=0)
+        model.fit(X_train, y_train, eval_metric='logloss', eval_set=[(X_train, y_train), (X_test, y_test)], early_stopping_rounds=10, verbose=0)
         
         # Save the trained model for this fold
         model.save_model(f"{data_folder}{modal[modal_id]}_model/xgb_model_fold{i+1}.json")
