@@ -33,10 +33,6 @@ from torch_geometric.utils import train_test_split_edges
 from torch_geometric.nn import TopKPooling
 from torch_geometric.utils import negative_sampling
 from torch_geometric.data import Data
-from model.Auto_Fusion import *
-from model.ESM import *
-from model.VGAE import *
-from model.PAE import *
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import xgboost as xgb
@@ -44,6 +40,16 @@ from xgboost import XGBClassifier
 from Bio.PDB import PDBParser, PPBuilder, Polypeptide
 parser = PDBParser(QUIET=True)
 ppb = PPBuilder()
+
+import sys
+script_directory = os.path.dirname(os.path.abspath(__file__))
+model_path = f"{script_directory}/../"
+sys.path.append(model_path)
+
+from model.Auto_Fusion import *
+from model.ESM import *
+from model.VGAE import *
+from model.PAE import *
 
 # Check if GPU is available
 if torch.cuda.is_available():
