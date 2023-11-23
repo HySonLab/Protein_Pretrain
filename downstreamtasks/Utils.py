@@ -1,3 +1,7 @@
+import atom3d.datasets as da
+from atom3d.filters import filters
+import atom3d.protein.sequence as seq
+import atom3d.util.formats as fo
 import warnings
 warnings.filterwarnings("ignore")
 import random
@@ -17,11 +21,10 @@ import os
 import glob
 import gpytorch
 import h5py
-from sklearn.metrics import roc_auc_score
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error, confusion_matrix, accuracy_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, confusion_matrix, accuracy_score, roc_auc_score
 from sklearn.utils import shuffle
 from sklearn.model_selection import GroupKFold
 from rdkit import Chem
@@ -141,34 +144,85 @@ def read_pdb(pdb_path):
 
   return sequence, graph, point_cloud
 
-def get_multimodal_representation(protein_name, ESM, VGAE, PAE, Fusion):
-  sequence, graph, point_cloud = read_pdb(protein_name)
-  
-  # Using GPU
-  graph = graph.to(device)
-  point_cloud = point_cloud.to(device)
-  sequence = sequence.to(device)
+def read_atom3d(atoms_df):
 
-  # Pass the sequence data through ESM for encoding
-  with torch.no_grad():
+
+    atoms_df = filters.standard_residue_filter(atoms_df)
+    # Graph
+    C_alpha_df = atoms_df[atoms_df['name'] == "CA"]
+    residue_coords = fo.get_coordinates_from_df(C_alpha_df)
+    residue_coords = np.array(residue_coords, dtype=np.float32)
+    sequence = ""
+    for chain_sequence in seq.get_chain_sequences(atoms_df): sequence += chain_sequence[1]
+    node_features = one_hot_encode_amino_acid(sequence)
+    x = torch.tensor(node_features, dtype=torch.float32)
+    k_neighbors = min(5, len(sequence) - 1)
+    edge_index = kneighbors_graph(residue_coords, k_neighbors, mode='connectivity', include_self=False)
+    edge_index = edge_index.nonzero()
+    edge_index = np.array(edge_index)
+    edge_index = torch.from_numpy(edge_index).to(torch.long).contiguous()
+    neg_edge_index = negative_sampling(
+        edge_index= edge_index,
+        num_nodes= x.size(0),
+        num_neg_samples= edge_index.size(1)//2
+    )
+    graph = Data(x=x, edge_index=edge_index, neg_edge_index=neg_edge_index)
+   
+    # Point Cloud
+    atom_coords = fo.get_coordinates_from_df(atoms_df)
+    desired_num_points = 2048
+    atom_coords = np.array(atom_coords, dtype=np.float32)
+    num_points = atom_coords.shape[0]
+    if num_points < desired_num_points:
+        padding = np.zeros((desired_num_points - num_points, 3), dtype=np.float32)
+        atom_coords = np.concatenate((atom_coords, padding), axis=0)
+    elif num_points > desired_num_points:
+        atom_coords = atom_coords[:desired_num_points, :]
+    atom_coords = torch.tensor(atom_coords, dtype=torch.float32)
+    atom_coords -= atom_coords.mean(0)
+    d = np.sqrt((atom_coords ** 2).sum(1))
+    atom_coords /= d.max()
+    point_cloud = torch.FloatTensor(atom_coords).permute(1, 0)
+
+
+    # Sequence
+    sequence = tokenizer(sequence, return_tensors="pt", padding=True, truncation=True, max_length=500)["input_ids"]
+    return sequence, graph, point_cloud
+
+def get_multimodal_representation(protein_path, ESM, VGAE, PAE, Fusion):
+
+    # Check file_extension
+    file_name, file_extension = os.path.splitext(protein_path)
+    if file_extension == "pdb":
+        sequence, graph, point_cloud = read_pdb(protein_path)
+    elif file_extension == "hdf5":
+        sequence, graph, point_cloud = read_hdf5(protein_path)
+    
+    # Using GPU
+    graph = graph.to(device)
+    point_cloud = point_cloud.to(device)
+    sequence = sequence.to(device)
+
+    # Pass the sequence data through ESM for encoding
+    with torch.no_grad():
         encoded_sequence = ESM(sequence, output_hidden_states=True)['hidden_states'][-1][0,-1].to("cpu")
         encoded_sequence = z_score_standardization(encoded_sequence)
 
-  # Pass the graph data through VGAE for encoding
-  with torch.no_grad():
-      encoded_graph = VGAE.encode(graph.x, graph.edge_index).to("cpu")
-      encoded_graph = process_encoded_graph(encoded_graph, graph.edge_index.to("cpu"))
-      encoded_graph = torch.mean(encoded_graph, dim=1)
-      encoded_graph = z_score_standardization(encoded_graph)
+    # Pass the graph data through VGAE for encoding
+    with torch.no_grad():
+        encoded_graph = VGAE.encode(graph.x, graph.edge_index).to("cpu")
+        encoded_graph = process_encoded_graph(encoded_graph, graph.edge_index.to("cpu"))
+        encoded_graph = torch.mean(encoded_graph, dim=1)
+        encoded_graph = z_score_standardization(encoded_graph)
 
-  # Pass the point cloud data through PAE for encoding
-  with torch.no_grad():
-      encoded_point_cloud = PAE.encode(point_cloud[None, :]).squeeze().to("cpu")
-      encoded_point_cloud = z_score_standardization(encoded_point_cloud)
+    # Pass the point cloud data through PAE for encoding
+    with torch.no_grad():
+        encoded_point_cloud = PAE.encode(point_cloud[None, :]).squeeze().to("cpu")
+        encoded_point_cloud = z_score_standardization(encoded_point_cloud)
 
-  concatenated_data = torch.cat((encoded_sequence, encoded_graph, encoded_point_cloud), dim=0).unsqueeze(0).to(device)
-  multimodal_representation = Fusion.encode(concatenated_data).squeeze().to("cpu")
-  return  (multimodal_representation, encoded_sequence, encoded_graph, encoded_point_cloud)
+    concatenated_data = torch.cat((encoded_sequence, encoded_graph, encoded_point_cloud), dim=0).unsqueeze(0).to(device)
+    multimodal_representation = Fusion.encode(concatenated_data).squeeze().to("cpu")
+    return  (multimodal_representation, encoded_sequence, encoded_graph, encoded_point_cloud)
 
 def get_ligand_representation(ligand_smiles):
     mol = Chem.MolFromSmiles(ligand_smiles)
@@ -219,36 +273,6 @@ def read_hdf5(hdf5_path):
     point_cloud = torch.FloatTensor(coordinates).permute(1, 0)
 
     return sequence_token, graph, point_cloud
-
-def get_multimodal_representation_from_hdf5(protein_name, ESM, VGAE, PAE, Fusion):
-  sequence, graph, point_cloud = read_hdf5(protein_name)
-  
-  # Using GPU
-  graph = graph.to(device)
-  point_cloud = point_cloud.to(device)
-  sequence = sequence.to(device)
-
-  # Pass the sequence data through ESM for encoding
-  with torch.no_grad():
-        encoded_sequence = ESM(sequence, output_hidden_states=True)['hidden_states'][-1][0,-1].to("cpu")
-        encoded_sequence = z_score_standardization(encoded_sequence)
-
-  # Pass the graph data through VGAE for encoding
-  with torch.no_grad():
-      encoded_graph = VGAE.encode(graph.x, graph.edge_index).to("cpu")
-      encoded_graph = process_encoded_graph(encoded_graph, graph.edge_index.to("cpu"))
-      encoded_graph = torch.mean(encoded_graph, dim=1)
-      encoded_graph = z_score_standardization(encoded_graph)
-
-  # Pass the point cloud data through PAE for encoding
-  with torch.no_grad():
-      encoded_point_cloud = PAE.encode(point_cloud[None, :]).squeeze().to("cpu")
-      encoded_point_cloud = z_score_standardization(encoded_point_cloud)
-
-  concatenated_data = torch.cat((encoded_sequence, encoded_graph, encoded_point_cloud), dim=0).unsqueeze(0).to(device)
-  multimodal_representation = Fusion.encode(concatenated_data).squeeze().to("cpu")
-
-  return (multimodal_representation, encoded_sequence, encoded_graph, encoded_point_cloud)
 
 def suffle(list1, list2):
     temp = list(zip(list1, list2))

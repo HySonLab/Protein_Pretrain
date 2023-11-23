@@ -1,6 +1,7 @@
 import warnings
 import pickle
 import math
+import os
 
 from model.PAE import *
 from torch_geometric.data import DataLoader
@@ -10,7 +11,7 @@ from torch.utils.data import Dataset
 from tensorboardX import SummaryWriter
 
 # Create a summary writer for logging
-writer = SummaryWriter(log_dir="pretrain/log/PAE")
+writer = SummaryWriter(log_dir="/log/PAE")
 
 # Define a custom dataset class for handling point cloud data
 class PointClouds(Dataset):
@@ -24,7 +25,7 @@ class PointClouds(Dataset):
         return self.dataset[i]
 
 # Load the point cloud data
-with open('pretrain/data/swissprot/pointcloud.pkl', 'rb') as f:
+with open('/data/swissprot/pointcloud.pkl', 'rb') as f:
     print("Loading data ...")
     dataset = pickle.load(f)
 print("Data loaded successfully.")
@@ -162,7 +163,8 @@ for epoch in range(num_epochs):
     print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
 
 # Define the file path for saving the model
-PATH = "/model/PAE.pt"
+script_directory = os.path.dirname(os.path.abspath(__file__))
+PATH = f"{script_directory}/../model/PAE.pt"
 
 # Save the PAE model
 torch.save(pae_model, PATH)

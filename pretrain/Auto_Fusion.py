@@ -7,8 +7,9 @@ from tensorboardX import SummaryWriter
 from torch_geometric.data import DataLoader
 import torch.optim as optim
 from torch.utils.data import Dataset
+import os
 
-writer = SummaryWriter(log_dir="pretrain/log/Fusion")
+writer = SummaryWriter(log_dir="/log/Fusion")
 
 class MultimodalDataset(Dataset):
     def __init__(self, data):
@@ -21,7 +22,7 @@ class MultimodalDataset(Dataset):
         return self.data[index]
 
 # Load the preprocessed data
-with open('pretrain/data/swissprot/fusion.pkl', 'rb') as f:
+with open('/data/swissprot/fusion.pkl', 'rb') as f:
     print("Loading data ...")
     dataset = pickle.load(f)
 print("Data loaded successfully.")
@@ -101,7 +102,8 @@ for epoch in range(num_epochs):
     print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
 
 # Save the fusion model to a file
-PATH = "/model/Fusion.pt"
+script_directory = os.path.dirname(os.path.abspath(__file__))
+PATH = f"{script_directory}/../model/Fusion.pt"
 torch.save(fusion_model, PATH)
 
 # Load the saved model

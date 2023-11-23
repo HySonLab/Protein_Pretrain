@@ -1,9 +1,20 @@
 # Multimodal Pretraining for Unsupervised Protein Representation Learning
 
-Contributors:
+![framework](./figures/framework.png)
+
+### Paper
+Published at **PRX LIFE** journal: [Link to Paper](https://www.overleaf.com/read/kmmxhmngnksd#79de86)
+
+### Contributors
 * Viet Thanh Duy Nguyen
 * Truong Son Hy (Correspondent / PI)
 
-![framework](./figures/framework.png)
+### Data Downloading
 
-Paper: https://www.overleaf.com/read/kmmxhmngnksd#79de86
+### Data Preprocessing
+
+### Pretraining
+
+### Downstream Tasks
+
+### Citation

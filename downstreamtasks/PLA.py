@@ -5,8 +5,10 @@ import ast
 modal = ['sequence', 'graph', 'point_cloud', 'multimodal']
 modal_id = 1
 
-# Define the data folder
-data_folder = '/downstreamtasks/data/KIBA/'
+# Specify the dataset you are working with
+dataset = ['KIBA', 'DAVIS', "PDBbind"]
+dataset_id = 0
+data_folder = f'/data/{dataset[dataset_id]}/'
 
 # Read the label CSV file
 df = pd.read_csv(f'{data_folder}/label.csv')

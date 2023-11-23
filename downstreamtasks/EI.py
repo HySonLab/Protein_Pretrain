@@ -4,7 +4,7 @@ from Utils import *
 modal = ['sequence', 'graph', 'point_cloud', 'multimodal']
 modal_id = 3
 
-data_folder = 'downstreamtasks/ProtDD/'
+data_folder = '/data/ProtDD/'
 
 # Load feature data from the selected modality
 with open(f'{data_folder}{modal[modal_id]}.pkl', 'rb') as f:

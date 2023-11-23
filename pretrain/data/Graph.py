@@ -67,7 +67,7 @@ def pdb_to_graph(pdb_path, k_neighbors=5):
     return data
 
 # Directory containing PDB files
-pdb_directory = 'pretrain/data/swissprot/'
+pdb_directory = '/swissprot/'
 pdb_files = [f for f in os.listdir(pdb_directory) if os.path.splitext(f)[1] == ".pdb"]
 print("The Number of files:", len(pdb_files))
 
@@ -82,6 +82,6 @@ for i, pdb_file in enumerate(pdb_files):
         print(f"{i + 1} files processed")
 
 # Save the dataset of graph data objects to a file
-with open('pretrain/data/swissprot/graphs.pkl', 'wb') as f:
+with open('/swissprot/graphs.pkl', 'wb') as f:
     pickle.dump(graphs, f)
 print("Done")

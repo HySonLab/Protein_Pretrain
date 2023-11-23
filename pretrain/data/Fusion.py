@@ -4,6 +4,7 @@ from model.VGAE import *
 from model.PAE import *
 from model.Auto_Fusion import *
 from torch_geometric.nn import TopKPooling
+import os
 
 # Check if GPU is available
 if torch.cuda.is_available():
@@ -14,12 +15,15 @@ else:
     print("No GPU available, using CPU.")
 
 # Load pre-trained models
-vgae_model = torch.load("/model/VGAE.pt", map_location=device)
-pae_model = torch.load("/model/PAE.pt", map_location=device)
-esm_model = transformers.AutoModelForMaskedLM.from_pretrained("facebook/esm2_t30_150M_UR50D")
+script_directory = os.path.dirname(os.path.abspath(__file__))
+vgae_model = torch.load(f"{script_directory}/../../model/VGAE.pt", map_location=device)
+pae_model = torch.load(f"{script_directory}/../../model/PAE.pt", map_location=device)
+model_token = "facebook/esm2_t30_150M_UR50D"
+esm_model = transformers.AutoModelForMaskedLM.from_pretrained(model_token)
 esm_model = esm_model.to(device)
+print("Pre-trained models loaded successfully.")
 
-data_folder = '/pretrain/data/swissprot/'
+data_folder = '/swissprot/'
 
 with open(f'{data_folder}graphs.pkl', 'rb') as f:
     print("Loading graph data ...")

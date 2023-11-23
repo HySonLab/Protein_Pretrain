@@ -18,7 +18,7 @@ def pdb_to_sequence(pdb_path):
             sequence += aa_code
     return sequence
 
-pdb_directory = "pretrain/data/swissprot/"
+pdb_directory = "/swissprot/"
 pdb_files = [f for f in os.listdir(pdb_directory) if os.path.splitext(f)[1] == ".pdb"]
 print("The Number of files:", len(pdb_files))
 
@@ -36,5 +36,5 @@ for i, pdb_file in enumerate(pdb_files):
 print("Done")
 
 # Save tokenized sequences to a pickle file
-with open('pretrain/data/swissprot/sequences.pkl', 'wb') as f:
+with open('/swissprot/sequences.pkl', 'wb') as f:
     pickle.dump(tokenized_sequences, f)

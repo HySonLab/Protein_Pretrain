@@ -3,6 +3,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import random
+import os
 random.seed(0)
 import pickle
 from model.VGAE import *
@@ -10,10 +11,10 @@ from torch_geometric.data import DataLoader
 from tensorboardX import SummaryWriter
 
 # Create a summary writer for logging
-writer = SummaryWriter(log_dir="pretrain/log/VGAE")
+writer = SummaryWriter(log_dir="/log/VGAE")
 
 # Load graph data from a pickle file
-with open('pretrain/data/swissprot/graph.pkl', 'rb') as f:
+with open('/data/swissprot/graph.pkl', 'rb') as f:
     print("Loading data ...")
     graphs = pickle.load(f)
 print("Data loaded successfully.")
@@ -86,7 +87,8 @@ for epoch in range(1, num_epochs + 1):
     print(f'Epoch [{epoch}/{num_epochs}], Train Loss: {train_loss:.4f}, Valid Loss: {val_loss:.4f}')
 
 # Define the file path for saving the model
-PATH = "/model/VGAE.pt"
+script_directory = os.path.dirname(os.path.abspath(__file__))
+PATH = f"{script_directory}/../model/VGAE.pt"
 
 # Save the VGAE model
 torch.save(vgae_model, PATH)
