@@ -1,12 +1,12 @@
 from Utils import *
 
 # Specify the data folder and the label file names
-data_folder = '/data/SCOPe1.75/'
+data_folder = '/data/SCOPe1.75'
 label_file_name = ['training', 'validation', 'test_family', 'test_fold', 'test_superfamily']
 
 # Specify the modality and its ID
 modal = ['sequence', 'graph', 'point_cloud', 'multimodal']
-modal_id = 0
+modal_id = 3
 
 # Initialize dictionaries to store feature data and labels
 X = {}
@@ -48,7 +48,7 @@ def train():
     xgb_model.fit(X_train, y_train, eval_metric='mlogloss', eval_set=[(X_train, y_train), (X_validation, y_validation)], early_stopping_rounds=10, verbose=1)
     
     # Save the trained model
-    xgb_model.save_model(f"{data_folder}{modal[modal_id]}_model.json")
+    xgb_model.save_model(f"{data_folder}/{modal[modal_id]}_model.json")
 
 def test():
     # Load the trained XGBoost classifier model

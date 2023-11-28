@@ -12,7 +12,7 @@ print("Pre-trained models loaded successfully.")
 
 print("Pre-trained models loaded successfully.")
 
-data_folder = '/SCOPe1.75/'  # Define the data folder
+data_folder = '/SCOPe1.75'  # Define the data folder
 hdf5_folder_name = ['training', 'validation', 'test_family', 'test_fold', 'test_superfamily']
 
 # Iterate through different folders containing text files
@@ -26,11 +26,10 @@ for folder in hdf5_folder_name:
     sequence = []
     graph = []
     point_cloud = []
-    target_path = data_folder + folder
 
     # Iterate through HDF5 files in the current folder
     for i, hdf5_file_name in tqdm(enumerate(hdf5_file_names), total=len(hdf5_file_names)):
-        hdf5_path = f'{data_folder}{folder}/{hdf5_file_name}.hdf5'
+        hdf5_path = f'{data_folder}/{folder}/{hdf5_file_name}.hdf5'
 
         # Get multimodal representations from the HDF5 file using pre-trained models
         multimodal_representation, encoded_sequence, encoded_graph, encoded_point_cloud = get_multimodal_representation(
@@ -43,16 +42,16 @@ for folder in hdf5_folder_name:
         point_cloud.append(encoded_point_cloud.detach().numpy())
 
     # Save the multimodal representations to pickle files in the target folder
-    with open(f'{target_path}/multimodal.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/multimodal.pkl', 'wb') as f:
         pickle.dump(mulmodal, f)
 
-    with open(f'{target_path}/sequence.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/sequence.pkl', 'wb') as f:
         pickle.dump(sequence, f)
 
-    with open(f'{target_path}/graph.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/graph.pkl', 'wb') as f:
         pickle.dump(graph, f)
 
-    with open(f'{target_path}/point_cloud.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/point_cloud.pkl', 'wb') as f:
         pickle.dump(point_cloud, f)
 
     print(f"Saved {folder} folder")

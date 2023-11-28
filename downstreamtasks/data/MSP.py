@@ -1,6 +1,6 @@
 from Utils import *
 
-data_folder = '/Atom3D_MSP/split-by-sequence-identity-30/data/'
+data_folder = '/Atom3D_MSP/split-by-sequence-identity-30/data'
 folders = ['train', 'test', 'val']
 
 # Load pre-trained models
@@ -14,7 +14,7 @@ fusion_model = torch.load(f"{script_directory}/../../model/Fusion.pt", map_locat
 print("Pre-trained models loaded successfully.")
 
 for folder in folders:
-    dataset = da.load_dataset(f'{data_folder}{folder}', 'lmdb')
+    dataset = da.load_dataset(f'{data_folder}/{folder}', 'lmdb')
 
     label = []
     mulmodal = []
@@ -37,17 +37,17 @@ for folder in folders:
         point_cloud.append(encoded_point_cloud.detach().numpy())
         label.append(int(struct['label']))
        
-    with open(f'{data_folder}{folder}/multimodal.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/multimodal.pkl', 'wb') as f:
         pickle.dump(mulmodal, f)
 
-    with open(f'{data_folder}{folder}/sequence.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/sequence.pkl', 'wb') as f:
         pickle.dump(sequence, f)
 
-    with open(f'{data_folder}{folder}/graph.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/graph.pkl', 'wb') as f:
         pickle.dump(graph, f)
 
-    with open(f'{data_folder}{folder}/point_cloud.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/point_cloud.pkl', 'wb') as f:
         pickle.dump(point_cloud, f)
    
-    with open(f'{data_folder}{folder}/label.pkl', 'wb') as f:
+    with open(f'{data_folder}/{folder}/label.pkl', 'wb') as f:
         pickle.dump(label, f)

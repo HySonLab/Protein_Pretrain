@@ -1,5 +1,5 @@
 from Utils import *
-data_folder = '/ProtDD/'
+data_folder = '/ProtDD'
 # Load pre-trained models
 script_directory = os.path.dirname(os.path.abspath(__file__))
 vgae_model = torch.load(f"{script_directory}/../../model/VGAE.pt", map_location=device)
@@ -11,7 +11,7 @@ fusion_model = torch.load(f"{script_directory}/../../model/Fusion.pt", map_locat
 print("Pre-trained models loaded successfully.")
 
 # Read the label CSV file
-df = pd.read_csv(f'/{data_folder}data.csv')
+df = pd.read_csv(f'{data_folder}/data.csv')
 print("Number of samples:", len(df))
 
 # Initialize empty lists to store multimodal representations
@@ -34,14 +34,14 @@ for i, hdf5_file in tqdm(enumerate(df['id']), total=len(df['id'])):
     point_cloud.append(encoded_point_cloud.detach().numpy())
 
 # Save the multimodal representations to pickle files
-with open(f'/{data_folder}multimodal.pkl', 'wb') as f:
+with open(f'{data_folder}/multimodal.pkl', 'wb') as f:
     pickle.dump(mulmodal, f)
 
-with open(f'/{data_folder}sequence.pkl', 'wb') as f:
+with open(f'{data_folder}/sequence.pkl', 'wb') as f:
     pickle.dump(sequence, f)
 
-with open(f'/{data_folder}graph.pkl', 'wb') as f:
+with open(f'{data_folder}/graph.pkl', 'wb') as f:
     pickle.dump(graph, f)
 
-with open(f'/{data_folder}point_cloud.pkl', 'wb') as f:
+with open(f'{data_folder}/point_cloud.pkl', 'wb') as f:
     pickle.dump(point_cloud, f)

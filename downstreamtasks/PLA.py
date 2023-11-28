@@ -3,26 +3,26 @@ import ast
 
 # Define the modalities and select one
 modal = ['sequence', 'graph', 'point_cloud', 'multimodal']
-modal_id = 1
+modal_id = 3
 
 # Specify the dataset you are working with
 dataset = ['KIBA', 'DAVIS', "PDBbind"]
 dataset_id = 0
-data_folder = f'/data/{dataset[dataset_id]}/'
+data_folder = f'/data/{dataset[dataset_id]}'
 
 # Read the label CSV file
-df = pd.read_csv(f'{data_folder}/label.csv')
+df = pd.read_csv(f'{data_folder}label.csv')
 print("Number of samples:", len(df))
 
 # Load feature data from the selected modality
-with open(f'{data_folder}{modal[modal_id]}.pkl', 'rb') as f:
+with open(f'{data_folder}/{modal[modal_id]}.pkl', 'rb') as f:
     X = np.array(pickle.load(f))
 
 # Load labels
 y = df['label'].to_numpy()
 
 # Load test and train IDs from the fold setting
-with open(f'{data_folder}folds/test_fold_setting.txt', 'r') as f:
+with open(f'{data_folder}/folds/test_fold_setting.txt', 'r') as f:
     test_ids_str = f.read()
     test_ids = ast.literal_eval(test_ids_str)
     train_ids = np.setdiff1d(np.arange(X.shape[0]), test_ids)

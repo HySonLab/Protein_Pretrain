@@ -116,11 +116,8 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 PATH = f"{script_directory}/../model/Fusion.pt"
 torch.save(fusion_model, PATH)
 
-# Load the saved model
-model = torch.load(PATH)
-
 # Test function
-def test():
+def test(model):
     model.eval()
     total_test_loss = 0.0
 
@@ -135,6 +132,8 @@ def test():
     average_test_loss = total_test_loss / len(test_loader)
     return average_test_loss
 
+# Load the saved model
+model = torch.load(PATH)
 # Evaluate the model on the test dataset
-test_loss = test()
+test_loss = test(model)
 print(f"Average MSE on Test Set: {test_loss:.4f}")

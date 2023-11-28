@@ -13,10 +13,10 @@ print("Pre-trained models loaded successfully.")
 # Specify the dataset you are working with
 dataset = ['KIBA', 'DAVIS', "PDBbind"]
 dataset_id = 0
-data_folder = f'/{dataset[dataset_id]}/'
+data_folder = f'/{dataset[dataset_id]}'
 
 # Read the label CSV file
-df = pd.read_csv(f'{data_folder}label.csv')
+df = pd.read_csv(f'{data_folder}/full.csv')
 print("Number of samples:", len(df))
 
 mulmodal = []
@@ -26,7 +26,7 @@ point_cloud = []
 
 # Iterate through the dataset to process each sample
 for i, (ligand_smiles, protein_name) in tqdm(enumerate(zip(df["ligand"], df["protein"]), total=len(df))):
-    pdb_path = f"/downstreamtask/data/{dataset[dataset_id]}/pdb/{protein_name}.pdb"
+    pdb_path = f"{data_folder}/pdb/{protein_name}.pdb"
     multimodal_representation, encoded_sequence, encoded_graph, encoded_point_cloud = get_multimodal_representation(pdb_path, esm_model, vgae_model, pae_model, fusion_model)
     ligand_representation = get_ligand_representation(ligand_smiles)
 
@@ -43,14 +43,14 @@ for i, (ligand_smiles, protein_name) in tqdm(enumerate(zip(df["ligand"], df["pro
     point_cloud.append(point_cloud_feature)
 
 # Save the features to pickle files
-with open(f'{data_folder}multimodal.pkl', 'wb') as f:
+with open(f'{data_folder}/multimodal.pkl', 'wb') as f:
     pickle.dump(mulmodal, f)
 
-with open(f'{data_folder}sequence.pkl', 'wb') as f:
+with open(f'{data_folder}/sequence.pkl', 'wb') as f:
     pickle.dump(sequence, f)
 
-with open(f'{data_folder}graph.pkl', 'wb') as f:
+with open(f'{data_folder}/graph.pkl', 'wb') as f:
     pickle.dump(graph, f)
 
-with open(f'{data_folder}point_cloud.pkl', 'wb') as f:
+with open(f'{data_folder}/point_cloud.pkl', 'wb') as f:
     pickle.dump(point_cloud, f)

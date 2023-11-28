@@ -181,7 +181,7 @@ torch.save(pae_model, PATH)
 print("Model saved")
 
 # Testing function
-def test():
+def test(pae_model):
     pae_model.eval()
     total_test_loss = 0.0
 
@@ -198,6 +198,7 @@ def test():
     average_test_loss = total_test_loss / len(test_loader)
     return average_test_loss
 
+pae_model = torch.load(PATH)
 # Evaluate the model on the test dataset
-test_loss = test()
+test_loss = test(pae_model)
 print(f"Average Chamfer Distance on Test Set: {test_loss:.4f}")

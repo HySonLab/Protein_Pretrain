@@ -4,10 +4,10 @@ from Utils import *
 modal = ['sequence', 'graph', 'point_cloud', 'multimodal']
 modal_id = 3
 
-data_folder = '/data/ProtDD/'
+data_folder = '/data/ProtDD'
 
 # Load feature data from the selected modality
-with open(f'{data_folder}{modal[modal_id]}.pkl', 'rb') as f:
+with open(f'{data_folder}/{modal[modal_id]}.pkl', 'rb') as f:
     X = np.array(pickle.load(f))
 
 # Read the label CSV file
