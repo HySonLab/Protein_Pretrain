@@ -64,8 +64,7 @@ python {task_name}.py --mode your_mode --modal your_modal
     * `--dataset` (Only available for PLA task): Select the dataset (`DAVIS`, `KIBA` or `PDBBind`)
 ### Citation
 
-```
-bibtex
+```bibtex
 @article {Nguyen2023.11.29.569288,
 	author = {Viet Thanh Duy Nguyen and Truong Son Hy},
 	title = {Multimodal Pretraining for Unsupervised Protein Representation Learning},
