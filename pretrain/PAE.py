@@ -1,3 +1,4 @@
+import argparse
 import warnings
 # Disable DeepSNAP warnings for clearer printout in the tutorial
 warnings.filterwarnings("ignore")
@@ -19,6 +20,9 @@ model_path = f"{script_directory}/../"
 sys.path.append(model_path)
 
 from model.PAE import *
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+PATH = f"{script_directory}/../model/PAE.pt"
 
 # Create a summary writer for logging
 writer = SummaryWriter(log_dir="/log/PAE")
@@ -162,24 +166,6 @@ def validation():
     average_val_loss = total_val_loss / len(valid_loader)
     return average_val_loss
 
-num_epochs = 100
-
-# Training loop
-for epoch in range(num_epochs):
-    train_loss = train()
-    val_loss = validation()
-    writer.add_scalar('Loss/train', train_loss, epoch)
-    writer.add_scalar('Loss/valid', val_loss, epoch)
-    print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
-
-# Define the file path for saving the model
-script_directory = os.path.dirname(os.path.abspath(__file__))
-PATH = f"{script_directory}/../model/PAE.pt"
-
-# Save the PAE model
-torch.save(pae_model, PATH)
-print("Model saved")
-
 # Testing function
 def test(pae_model):
     pae_model.eval()
@@ -198,7 +184,32 @@ def test(pae_model):
     average_test_loss = total_test_loss / len(test_loader)
     return average_test_loss
 
-pae_model = torch.load(PATH)
-# Evaluate the model on the test dataset
-test_loss = test(pae_model)
-print(f"Average Chamfer Distance on Test Set: {test_loss:.4f}")
+def main():
+    parser = argparse.ArgumentParser(description="Point Cloud Auto-Encoder (PAE)")
+    parser.add_argument("--mode", choices=["train", "test"], help="Select mode: train or test", required=True)
+    args = parser.parse_args()
+
+    num_epochs = 100
+    if args.mode == "train":
+        # Training mode
+        for epoch in range(num_epochs):
+            train_loss = train()
+            val_loss = validation()
+            writer.add_scalar('Loss/train', train_loss, epoch)
+            writer.add_scalar('Loss/valid', val_loss, epoch)
+            print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
+
+        # Save the PAE model
+        torch.save(pae_model, PATH)
+        print("Model saved")
+
+    elif args.mode == "test":
+        # Test mode
+        # Load the saved model
+        pae_model = torch.load(PATH)
+        # Evaluate the model on the test dataset
+        test_loss = test(pae_model)
+        print(f"Average Chamfer Distance on Test Set: {test_loss:.4f}")
+
+if __name__ == "__main__":
+    main()

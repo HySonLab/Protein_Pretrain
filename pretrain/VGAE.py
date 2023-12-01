@@ -1,3 +1,4 @@
+import argparse
 import warnings
 # Disable DeepSNAP warnings for clearer printout in the tutorial
 warnings.filterwarnings("ignore")
@@ -16,6 +17,10 @@ model_path = f"{script_directory}/../"
 sys.path.append(model_path)
 
 from model.VGAE import *
+
+# Define the file path for saving the model
+script_directory = os.path.dirname(os.path.abspath(__file__))
+PATH = f"{script_directory}/../model/VGAE.pt"
 
 from tensorboardX import SummaryWriter
 # Create a summary writer for logging
@@ -85,23 +90,6 @@ def validation(model, valid_loader):
         val_loss /= len(valid_loader)
         return val_loss
 
-# Training loop
-num_epochs = 100
-for epoch in range(1, num_epochs + 1):
-    train_loss = train(vgae_model, train_loader, optimizer)
-    val_loss = validation(vgae_model, valid_loader)
-    writer.add_scalar('Loss/train', train_loss, epoch)
-    writer.add_scalar('Loss/valid', val_loss, epoch)
-    print(f'Epoch [{epoch}/{num_epochs}], Train Loss: {train_loss:.4f}, Valid Loss: {val_loss:.4f}')
-
-# Define the file path for saving the model
-script_directory = os.path.dirname(os.path.abspath(__file__))
-PATH = f"{script_directory}/../model/VGAE.pt"
-
-# Save the VGAE model
-torch.save(vgae_model, PATH)
-print("Model saved")
-
 # Function to test the VGAE model
 def test_model(model, test_loader):
     model.eval()
@@ -117,9 +105,34 @@ def test_model(model, test_loader):
             AP.append(ap)
     return sum(AUC) / len(AUC), sum(AP) / len(AP)
 
-# Load the saved model
-vgae_model = torch.load(PATH)
+def main():
+    parser = argparse.ArgumentParser(description="Variational Graph Autoencoder (VGAE)")
+    parser.add_argument("--mode", choices=["train", "test"], help="Select mode: train or test", required=True)
+    args = parser.parse_args()
 
-# Test the model on the test dataset
-AUC, AP = test_model(vgae_model, test_loader)
-print(f"AUC: {AUC}, AP: {AP}")
+    # Your existing code here
+    num_epochs = 100
+    if args.mode == "train":
+        # Training mode
+        for epoch in range(1, num_epochs + 1):
+            train_loss = train(vgae_model, train_loader, optimizer)
+            val_loss = validation(vgae_model, valid_loader)
+            writer.add_scalar('Loss/train', train_loss, epoch)
+            writer.add_scalar('Loss/valid', val_loss, epoch)
+            print(f'Epoch [{epoch}/{num_epochs}], Train Loss: {train_loss:.4f}, Valid Loss: {val_loss:.4f}')
+
+        # Save the VGAE model
+        torch.save(vgae_model, PATH)
+        print("Model saved")
+
+    elif args.mode == "test":
+        # Test mode
+        # Load the saved model
+        vgae_model = torch.load(PATH)
+
+        # Test the model on the test dataset
+        AUC, AP = test_model(vgae_model, test_loader)
+        print(f"AUC: {AUC}, AP: {AP}")
+
+if __name__ == "__main__":
+    main()

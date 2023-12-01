@@ -1,3 +1,4 @@
+import argparse
 import warnings
 # Disable DeepSNAP warnings for clearer printout in the tutorial
 warnings.filterwarnings("ignore")
@@ -17,6 +18,9 @@ model_path = f"{script_directory}/../"
 sys.path.append(model_path)
 
 from model.Auto_Fusion import *
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+PATH = f"{script_directory}/../model/Fusion.pt"
 
 # Create a summary writer for logging
 writer = SummaryWriter(log_dir="/log/Fusion")
@@ -71,14 +75,14 @@ optimizer = optim.Adam(fusion_model.parameters(), lr=0.001)
 
 # Training function
 def train():
-    model.train()
+    fusion_model.train()
     total_loss = 0.0
 
     for batch in train_loader:
         optimizer.zero_grad()
         batch = batch.to(device)
-        encoding = model.encode(batch)
-        restoration = model.decode(encoding)
+        encoding = fusion_model.encode(batch)
+        restoration = fusion_model.decode(encoding)
         loss = criterion(batch, restoration)
         loss.backward()
         optimizer.step()
@@ -89,51 +93,63 @@ def train():
 
 # Validation function
 def validation():
-    model.eval()
+    fusion_model.eval()
     total_val_loss = 0.0
 
     with torch.no_grad():
         for batch in valid_loader:
             batch = batch.to(device)
-            encoding = model.encode(batch)
-            restoration = model.decode(encoding)
+            encoding = fusion_model.encode(batch)
+            restoration = fusion_model.decode(encoding)
             val_loss = criterion(batch, restoration)
             total_val_loss += val_loss.item()
 
     average_val_loss = total_val_loss / len(valid_loader)
     return average_val_loss
 
-num_epochs = 100
-for epoch in range(num_epochs):
-    train_loss = train()
-    val_loss = validation()
-    writer.add_scalar('Loss/train', train_loss, epoch)
-    writer.add_scalar('Loss/valid', val_loss, epoch)
-    print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
-
-# Save the fusion model to a file
-script_directory = os.path.dirname(os.path.abspath(__file__))
-PATH = f"{script_directory}/../model/Fusion.pt"
-torch.save(fusion_model, PATH)
-
 # Test function
-def test(model):
-    model.eval()
+def test(fusion_model):
+    fusion_model.eval()
     total_test_loss = 0.0
 
     with torch.no_grad():
         for data in test_loader:
             data = data.to(device)
-            encoding = model.encode(data)
-            restoration = model.decode(encoding)
+            encoding = fusion_model.encode(data)
+            restoration = fusion_model.decode(encoding)
             test_loss = criterion(data, restoration)
             total_test_loss += test_loss.item()
 
     average_test_loss = total_test_loss / len(test_loader)
     return average_test_loss
 
-# Load the saved model
-model = torch.load(PATH)
-# Evaluate the model on the test dataset
-test_loss = test(model)
-print(f"Average MSE on Test Set: {test_loss:.4f}")
+def main():
+    parser = argparse.ArgumentParser(description="Multimodal Fusion Model")
+    parser.add_argument("--mode", choices=["train", "test"], help="Select mode: train or test", required=True)
+    args = parser.parse_args()
+
+    # Your existing code here
+
+    if args.mode == "train":
+        # Training mode
+        num_epochs = 100
+        for epoch in range(num_epochs):
+            train_loss = train()
+            val_loss = validation()
+            writer.add_scalar('Loss/train', train_loss, epoch)
+            writer.add_scalar('Loss/valid', val_loss, epoch)
+            print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
+
+        # Save the fusion model to a file
+        torch.save(fusion_model, PATH)
+
+    elif args.mode == "test":
+        # Test mode
+        # Load the saved model
+        fusion_model = torch.load(PATH)
+        # Evaluate the model on the test dataset
+        test_loss = test(fusion_model)
+        print(f"Average MSE on Test Set: {test_loss:.4f}")
+
+if __name__ == "__main__":
+    main()

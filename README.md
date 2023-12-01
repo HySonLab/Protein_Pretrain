@@ -20,36 +20,42 @@
     * Move the downloaded files into the ```downstreamtasks/data/{dataset_name}``` directory and extract it.
 
 ### Data Preprocessing
-* For pretraining, run following commands:
+1. For pretraining, run following commands:
 ```
 cd /pretrain/data/
-python *.py
-```
-* For downstream tasks, run following commands:
-```
-cd /downstreamtasks/data/
-python *.py
-```
-### Pretraining
-* For pretraining all models, run following commands:
-```
-cd /pretraining/
-python *.py
-```
-* For pretraining a specific model, run the following commands, where model_name is either VGAE, PAE, or Fusion:
-```
-cd /pretraining/
-python {model_name}.py
-```
-### Downstream Tasks
-* For conducting experiment for all the downstream tasks, run following commands:
-```
-cd /downstreamtasks/
-python *.py
-```
-* For conducting experiment for a specific task, run the following commands, where task_name is in {EI, MSP, PFC, PLA}:
-```
-cd /downstreamtasks/
 python {task_name}.py
 ```
+Replace {task_name} with the specific task identifier:
+* PLA: Protein-ligand Binding Affinity
+* PFC: Protein Fold Classification
+* EI: Enzyme Identification
+* MSP: Mutation Stability Prediction
+2. For downstream tasks, run following commands:
+```
+cd /downstreamtasks/data/
+python {model_name}.py
+```
+Replace {model_name} with the specific model identifier:
+* VGAE: Variational Graph Autoencoder
+* PAE: PointNet Autoencoder
+* Auto-Fusion
+### Pretraining
+* Run following commands:
+```
+cd /pretrain/
+python {model_name}.py --mode your_mode
+```
+* Command-line Arguments
+    * `--mode`: Select the mode (`train` or `test`).
+### Downstream Tasks
+* Run following commands:
+```
+cd /downstreamtasks/
+python {task_name}.py --mode your_mode --modal your_modal 
+```
+* Command-line Arguments
+    * `--modal`: Select the modality (`sequence`, `graph`, `point_cloud` or `multimodal`).
+    * `--mode`: Select the mode (`train` or `test`).
+    * `--test_dataset` (Only available for PFC task): Select the test dataset for testing (`test_family`, `test_fold`, or `test_superfamily`).
+    * `--dataset` (Only available for PLA task): Select the dataset (`DAVIS`, `KIBA` or `PDBBind`)
 ### Citation

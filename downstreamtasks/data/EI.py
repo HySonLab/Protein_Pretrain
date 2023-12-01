@@ -10,8 +10,29 @@ esm_model = esm_model.to(device)
 fusion_model = torch.load(f"{script_directory}/../../model/Fusion.pt", map_location=device)
 print("Pre-trained models loaded successfully.")
 
-# Read the label CSV file
-df = pd.read_csv(f'{data_folder}/data.csv')
+# Attempt to read label.csv
+try:
+    df = pd.read_csv(f'{data_folder}/label.csv')
+# Create label.csv
+except:
+    with open(f'{data_folder}/amino_enzymes.txt', 'r') as f:
+        enzyme_ids = [line.strip() for line in f]
+
+    with open(f'{data_folder}/amino_no_enzymes.txt', 'r') as f:
+        non_enzyme_ids = [line.strip() for line in f]
+
+    fold_dataframes = []
+    for fold_id in range(10):
+        with open(f'{data_folder}/amino_fold_{fold_id}.txt', 'r') as f:
+            protein_ids = [line.strip() for line in f]
+
+        labels = [1 if id in enzyme_ids else 0 for id in protein_ids]
+        fold_df = pd.DataFrame({'id': protein_ids, 'label': labels, 'fold_id': fold_id})
+        fold_dataframes.append(fold_df)
+
+    df = pd.concat(fold_dataframes, ignore_index=True)
+    df.to_csv(f'{data_folder}/label.csv', index=False)
+
 print("Number of samples:", len(df))
 
 # Initialize empty lists to store multimodal representations
