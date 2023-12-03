@@ -65,7 +65,7 @@ python {task_name}.py --mode your_mode --modal your_modal
 ### Citation
 
 ```bibtex
-@article {Nguyen2023.11.29.569288,
+@article{Nguyen2023.11.29.569288,
 	author = {Viet Thanh Duy Nguyen and Truong Son Hy},
 	title = {Multimodal Pretraining for Unsupervised Protein Representation Learning},
 	elocation-id = {2023.11.29.569288},
@@ -73,8 +73,8 @@ python {task_name}.py --mode your_mode --modal your_modal
 	doi = {10.1101/2023.11.29.569288},
 	publisher = {Cold Spring Harbor Laboratory},
 	abstract = {In this paper, we introduce a framework of symmetry-preserving multimodal pretraining to learn a unified representation on proteins in an unsupervised manner that can take into account primary and tertiary structures. For each structure, we propose the corresponding pretraining method on sequence, graph and 3D point clouds based on large language models and generative models. We present a novel way to combining representations from multiple sources of information into a single global representation for proteins. We carefully analyze the performance of our framework in the pretraining tasks. For the fine-tuning tasks, our experiments have shown that our new multimodal representation can achieve competitive results in protein-ligand binding affinity prediction, protein fold classification, enzyme identification and mutation stability prediction. We expect that this work will accelerate future research in proteins. Our source code in PyTorch deep learning framework is publicly available at https://github.com/HySonLab/Protein_PretrainCompeting Interest StatementThe authors have declared no competing interest.},
-	URL = {https://www.biorxiv.org/content/early/2023/12/01/2023.11.29.569288},
-	eprint = {https://www.biorxiv.org/content/early/2023/12/01/2023.11.29.569288.full.pdf},
+	URL = {https://www.biorxiv.org/content/early/2023/12/02/2023.11.29.569288},
+	eprint = {https://www.biorxiv.org/content/early/2023/12/02/2023.11.29.569288.full.pdf},
 	journal = {bioRxiv}
 }
 ```
