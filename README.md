@@ -3,9 +3,6 @@
 ![framework](./figures/framework.png)
 
 ### Paper
-
-https://www.biorxiv.org/content/10.1101/2023.11.29.569288v1
-
 https://doi.org/10.1101/2023.11.29.569288
 
 ### Contributors
