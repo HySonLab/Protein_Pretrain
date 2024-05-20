@@ -24,6 +24,16 @@ https://doi.org/10.1101/2023.11.29.569288
 1. For pretraining, run following commands:
 ```
 cd /pretrain/data/
+python {model_name}.py
+```
+Replace {model_name} with the specific model identifier:
+* VGAE: Variational Graph Autoencoder
+* PAE: PointNet Autoencoder
+* Auto-Fusion
+
+2. For downstream tasks, run following commands:
+```
+cd /downstreamtasks/data/
 python {task_name}.py
 ```
 Replace {task_name} with the specific task identifier:
@@ -31,23 +41,20 @@ Replace {task_name} with the specific task identifier:
 * PFC: Protein Fold Classification
 * EI: Enzyme Identification
 * MSP: Mutation Stability Prediction
-2. For downstream tasks, run following commands:
-```
-cd /downstreamtasks/data/
-python {model_name}.py
-```
-Replace {model_name} with the specific model identifier:
-* VGAE: Variational Graph Autoencoder
-* PAE: PointNet Autoencoder
-* Auto-Fusion
+
 ### Pretraining
-* Run following commands:
+You have two options for using our models for pretraining: training from scratch or using our pre-trained model checkpoints.
+#### Training from Scratch
+If you prefer to train the model yourself, run the following commands:
 ```
 cd /pretrain/
 python {model_name}.py --mode your_mode
 ```
 * Command-line Arguments
     * `--mode`: Select the mode (`train` or `test`).
+#### Using Pre-trained Model Checkpoints
+For those who want to bypass the training phase, we provide pretrained model checkpoints that you can use directly in your projects. Download and integrate the pretrained model checkpoints from our shared drive: [checkpoints](https://drive.google.com/drive/folders/1_BBRPe2aC7rIg3HB6b5KkucvN1WOexwY?usp=sharing)
+
 ### Downstream Tasks
 * Run following commands:
 ```
