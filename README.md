@@ -1,9 +1,14 @@
 # Multimodal Pretraining for Unsupervised Protein Representation Learning
 
-![framework](./figures/framework.png)
+Published at journal *Biology Methods & Protocols* (Oxford University Press): 
 
-### Paper
+https://doi.org/10.1093/biomethods/bpae043
+
+Preprint:
+
 https://doi.org/10.1101/2023.11.29.569288
+
+![framework](./figures/framework.png)
 
 ### Contributors
 * Viet Thanh Duy Nguyen
