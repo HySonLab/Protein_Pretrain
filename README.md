@@ -71,7 +71,23 @@ python {task_name}.py --mode your_mode --modal your_modal
     * `--mode`: Select the mode (`train` or `test`).
     * `--test_dataset` (Only available for PFC task): Select the test dataset for testing (`test_family`, `test_fold`, or `test_superfamily`).
     * `--dataset` (Only available for PLA task): Select the dataset (`DAVIS`, `KIBA` or `PDBBind`)
-### Citation
+### Please cite our paper!
+
+```bibtex
+@article{10.1093/biomethods/bpae043,
+    author = {Duy Nguyen, Viet Thanh and Son Hy, Truong},
+    title = "{Multimodal pretraining for unsupervised protein representation learning}",
+    journal = {Biology Methods and Protocols},
+    pages = {bpae043},
+    year = {2024},
+    month = {06},
+    abstract = "{Proteins are complex biomolecules essential for numerous biological processes, making them crucial targets for advancements in molecular biology, medical research, and drug design. Understanding their intricate, hierarchical structures and functions is vital for progress in these fields. To capture this complexity, we introduce MPRL—Multimodal Protein Representation Learning, a novel framework for symmetry-preserving multimodal pretraining that learns unified, unsupervised protein representations by integrating primary and tertiary structures. MPRL employs Evolutionary Scale Modeling (ESM-2) for sequence analysis, Variational Graph Auto-Encoders (VGAE) for residue-level graphs, and PointNet Autoencoder (PAE) for 3D point clouds of atoms, each designed to capture the spatial and evolutionary intricacies of proteins while preserving critical symmetries. By leveraging Auto-Fusion to synthesize joint representations from these pretrained models, MPRL ensures robust and comprehensive protein representations. Our extensive evaluation demonstrates that MPRL significantly enhances performance in various tasks such as protein-ligand binding affinity prediction, protein fold classification, enzyme activity identification, and mutation stability prediction. This framework advances the understanding of protein dynamics and facilitates future research in the field. Our source code is publicly available at https://github.com/HySonLab/Protein\_Pretrain.}",
+    issn = {2396-8923},
+    doi = {10.1093/biomethods/bpae043},
+    url = {https://doi.org/10.1093/biomethods/bpae043},
+    eprint = {https://academic.oup.com/biomethods/advance-article-pdf/doi/10.1093/biomethods/bpae043/58272243/bpae043.pdf},
+}
+```
 
 ```bibtex
 @article{Nguyen2023.11.29.569288,
