@@ -27,8 +27,3 @@ class AutoFusion(nn.Module):
       z = self.fuse_out(compressed_z)
       return z
 
-input_features = 640 * 3
-latent_dim = 1024
-fusion_model = AutoFusion(latent_dim, input_features)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-fusion_model = fusion_model.to(device)

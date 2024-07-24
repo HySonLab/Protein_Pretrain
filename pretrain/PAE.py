@@ -14,10 +14,7 @@ from tensorboardX import SummaryWriter
 
 import os
 import sys
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-model_path = f"{script_directory}/../"
-sys.path.append(model_path)
+sys.path.append(".")
 
 from model.PAE import *
 
@@ -25,7 +22,7 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 PATH = f"{script_directory}/../model/PAE.pt"
 
 # Create a summary writer for logging
-writer = SummaryWriter(log_dir="/log/PAE")
+writer = SummaryWriter(log_dir="./log/PAE")
 
 # Define a custom dataset class for handling point cloud data
 class PointClouds(Dataset):
@@ -39,7 +36,7 @@ class PointClouds(Dataset):
         return self.dataset[i]
 
 # Load the point cloud data
-with open('/data/swissprot/pointcloud.pkl', 'rb') as f:
+with open('./pretrain/data/swissprot/pointclouds.pkl', 'rb') as f:
     print("Loading data ...")
     dataset = pickle.load(f)
 print("Data loaded successfully.")
@@ -91,8 +88,6 @@ class ChamferDistance(nn.Module):
         distance = min_for_each_x_i.sum(1) + min_for_each_y_j.sum(1)  # shape [b]
         return distance.mean(0)
 
-# Create an optimizer for the PAE (Point Cloud Auto-Encoder) model
-optimizer = optim.Adam(pae_model.parameters(), lr=0.001)
 
 # Function to apply random rotations to input data
 def random_rotation_matrix(batch_size):
@@ -125,7 +120,7 @@ def random_rotation_matrix(batch_size):
 chamfer_distance = ChamferDistance()
 
 # Training function
-def train():
+def train(pae_model, train_loader, optimizer, device):
     pae_model.train()
     total_loss = 0.0
 
@@ -149,7 +144,7 @@ def train():
     return average_loss
 
 # Validation function
-def validation():
+def validation(pae_model, valid_loader, device):
     pae_model.eval()
     total_val_loss = 0.0
 
@@ -167,7 +162,7 @@ def validation():
     return average_val_loss
 
 # Testing function
-def test(pae_model):
+def test(pae_model, test_loader, device):
     pae_model.eval()
     total_test_loss = 0.0
 
@@ -188,13 +183,20 @@ def main():
     parser = argparse.ArgumentParser(description="Point Cloud Auto-Encoder (PAE)")
     parser.add_argument("--mode", choices=["train", "test"], help="Select mode: train or test", required=True)
     args = parser.parse_args()
+    # Define the dimension of the representation vector and the number of points
+    k = 640
+    num_points = 2048
+    pae_model = PointAutoencoder(k, num_points)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    pae_model = pae_model.to(device)
+    optimizer = optim.Adam(pae_model.parameters(), lr=0.001)
 
     num_epochs = 100
     if args.mode == "train":
         # Training mode
         for epoch in range(num_epochs):
-            train_loss = train()
-            val_loss = validation()
+            train_loss = train(pae_model, train_loader, optimizer, device) 
+            val_loss = validation(pae_model, valid_loader, device)
             writer.add_scalar('Loss/train', train_loss, epoch)
             writer.add_scalar('Loss/valid', val_loss, epoch)
             print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
@@ -208,7 +210,7 @@ def main():
         # Load the saved model
         pae_model = torch.load(PATH)
         # Evaluate the model on the test dataset
-        test_loss = test(pae_model)
+        test_loss = test(pae_model, test_loader, device)
         print(f"Average Chamfer Distance on Test Set: {test_loss:.4f}")
 
 if __name__ == "__main__":

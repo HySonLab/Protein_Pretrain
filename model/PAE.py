@@ -94,7 +94,7 @@ class STNkd(nn.Module):
 # PointNet encoder
 class PointNetEncoder(nn.Module):
     def __init__(self, global_feat=True, feature_transform=False, channel=3):
-        super(PointNetEncoder, self).__init()
+        super(PointNetEncoder, self).__init__()
         # Spatial Transformer Network for 3D data
         self.stn = STN3d(channel)
         # Convolutional layers
@@ -177,7 +177,7 @@ class PointAutoencoder(nn.Module):
             k: an integer, dimension of the representation vector.
             num_points: an integer.
         """
-        super(PointAutoencoder, self).__init()
+        super(PointAutoencoder, self).__init__()
         self.num_points = num_points
         self.encoder = PointNetEncoder()
         self.fc_encoder = nn.Linear(1024, k)
@@ -191,10 +191,3 @@ class PointAutoencoder(nn.Module):
     def decode(self, encoding):
         restoration = self.decoder(encoding)
         return restoration
-
-# Define the dimension of the representation vector and the number of points
-k = 640
-num_points = 2048
-pae_model = PointAutoencoder(k, num_points)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-pae_model = pae_model.to(device)

@@ -1,10 +1,13 @@
 import pickle
+import os
+import sys
+sys.path.append(".")
+
 from model.ESM import *
 from model.VGAE import *
 from model.PAE import *
 from model.Auto_Fusion import *
 from torch_geometric.nn import TopKPooling
-import os
 
 # Check if GPU is available
 if torch.cuda.is_available():
@@ -23,19 +26,19 @@ esm_model = transformers.AutoModelForMaskedLM.from_pretrained(model_token)
 esm_model = esm_model.to(device)
 print("Pre-trained models loaded successfully.")
 
-data_folder = '/swissprot/'
+data_folder = "./pretrain/data/swissprot"
 
-with open(f'{data_folder}graphs.pkl', 'rb') as f:
+with open(f'{data_folder}/graphs.pkl', 'rb') as f:
     print("Loading graph data ...")
     graph_data = pickle.load(f)
 print("Graph data loaded successfully.")
 
-with open(f'{data_folder}pointcloud.pkl', 'rb') as f:
+with open(f'{data_folder}/pointclouds.pkl', 'rb') as f:
     print("Loading point cloud data ...")
     point_cloud_data = pickle.load(f)
 print("Point Cloud data loaded successfully.")
 
-with open(f'{data_folder}sequences.pkl', 'rb') as f:
+with open(f'{data_folder}/sequences.pkl', 'rb') as f:
     print("Loading sequence data ...")
     sequence_data = pickle.load(f)
 print("Sequence data loaded successfully.")
@@ -70,19 +73,22 @@ processed_data_list = []
 for i, (graph, point_cloud, sequence) in enumerate(zip(graph_data, point_cloud_data, sequence_data)):
     # Encode sequence data using ESM
     with torch.no_grad():
-        encoded_sequence = esm_model(sequence, output_hidden_states=True)['hidden_states'][-1][0, -1]
+        sequence = sequence.to(device)
+        encoded_sequence = esm_model(sequence, output_hidden_states=True)['hidden_states'][-1][0, -1].to("cpu")
         encoded_sequence = z_score_standardization(encoded_sequence)
 
     # Encode graph data using VGAE
     with torch.no_grad():
-        encoded_graph = vgae_model.encode(graph.x, graph.edge_index)
+        graph = graph.to(device)
+        encoded_graph = vgae_model.encode(graph.x, graph.edge_index).to("cpu")
         encoded_graph = process_encoded_graph(encoded_graph, graph.edge_index)
         encoded_graph = torch.mean(encoded_graph, dim=1)
         encoded_graph = z_score_standardization(encoded_graph)
 
     # Encode point cloud data using PAE
     with torch.no_grad():
-        encoded_point_cloud = pae_model.encode(point_cloud[None, :]).squeeze()
+        point_cloud = point_cloud.to(device)
+        encoded_point_cloud = pae_model.encode(point_cloud[None, :]).squeeze().to("cpu")
         encoded_point_cloud = z_score_standardization(encoded_point_cloud)
 
     concatenated_data = torch.cat((encoded_sequence, encoded_graph, encoded_point_cloud), dim=0)
@@ -95,5 +101,5 @@ print("Encoded Graph Shape:", encoded_graph.shape)
 print("Encoded Point Cloud Shape:", encoded_point_cloud.shape)
 print(concatenated_data.shape)
 
-with open(f'{data_folder}fusion.pkl', 'wb') as f:
+with open(f'{data_folder}/fusion.pkl', 'wb') as f:
     pickle.dump(processed_data_list, f)

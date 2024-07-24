@@ -11,10 +11,7 @@ from torch_geometric.data import DataLoader
 
 import os
 import sys
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-model_path = f"{script_directory}/../"
-sys.path.append(model_path)
+sys.path.append(".")
 
 from model.VGAE import *
 
@@ -24,10 +21,10 @@ PATH = f"{script_directory}/../model/VGAE.pt"
 
 from tensorboardX import SummaryWriter
 # Create a summary writer for logging
-writer = SummaryWriter(log_dir="/log/VGAE")
+writer = SummaryWriter(log_dir="./log/VGAE")
 
 # Load graph data from a pickle file
-with open('/data/swissprot/graph.pkl', 'rb') as f:
+with open('./pretrain/data/swissprot/graphs.pkl', 'rb') as f:
     print("Loading data ...")
     graphs = pickle.load(f)
 print("Data loaded successfully.")
@@ -60,11 +57,8 @@ train_loader = DataLoader(train_graphs, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_graphs, batch_size=batch_size, shuffle=False)
 valid_loader = DataLoader(valid_graphs, batch_size=batch_size, shuffle=False)
 
-# Create an optimizer for the VGAE (Variational Graph Autoencoder) model
-optimizer = torch.optim.Adam(vgae_model.parameters(), lr=0.001)
-
 # Function to train the VGAE model
-def train(model, train_loader, optimizer):
+def train(model, train_loader, optimizer, device):
     model.train()
     total_loss = 0
     for data in train_loader:
@@ -78,7 +72,7 @@ def train(model, train_loader, optimizer):
     return total_loss / len(train_loader)
 
 # Function to perform validation on the VGAE model
-def validation(model, valid_loader):
+def validation(model, valid_loader, device):
     model.eval()
     with torch.no_grad():
         val_loss = 0
@@ -91,7 +85,7 @@ def validation(model, valid_loader):
         return val_loss
 
 # Function to test the VGAE model
-def test_model(model, test_loader):
+def test_model(model, test_loader, device):
     model.eval()
     AUC = []
     AP = []
@@ -109,14 +103,28 @@ def main():
     parser = argparse.ArgumentParser(description="Variational Graph Autoencoder (VGAE)")
     parser.add_argument("--mode", choices=["train", "test"], help="Select mode: train or test", required=True)
     args = parser.parse_args()
+    
+    # Define the output dimensions for the model
+    out_channels = 10
+    num_features = 21
+
+    # Create an instance of VGAE using the VariationalGCNEncoder
+    vgae_model = VGAE(VariationalGCNEncoder(num_features, out_channels))
+
+    # Check if GPU is available, and move the model to the appropriate device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    vgae_model = vgae_model.to(device)
+
+    # Create an optimizer for the VGAE (Variational Graph Autoencoder) model
+    optimizer = torch.optim.Adam(vgae_model.parameters(), lr=0.001)
 
     # Your existing code here
     num_epochs = 100
     if args.mode == "train":
         # Training mode
         for epoch in range(1, num_epochs + 1):
-            train_loss = train(vgae_model, train_loader, optimizer)
-            val_loss = validation(vgae_model, valid_loader)
+            train_loss = train(vgae_model, train_loader, optimizer, device) 
+            val_loss = validation(vgae_model, valid_loader, device)
             writer.add_scalar('Loss/train', train_loss, epoch)
             writer.add_scalar('Loss/valid', val_loss, epoch)
             print(f'Epoch [{epoch}/{num_epochs}], Train Loss: {train_loss:.4f}, Valid Loss: {val_loss:.4f}')
@@ -131,7 +139,7 @@ def main():
         vgae_model = torch.load(PATH)
 
         # Test the model on the test dataset
-        AUC, AP = test_model(vgae_model, test_loader)
+        AUC, AP = test_model(vgae_model, test_loader, device)
         print(f"AUC: {AUC}, AP: {AP}")
 
 if __name__ == "__main__":

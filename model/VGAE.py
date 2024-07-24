@@ -19,14 +19,3 @@ class VariationalGCNEncoder(torch.nn.Module):
         logstd = self.conv_logstd(x, edge_index)
 
         return mu, logstd
-
-# Define the output dimensions for the model
-out_channels = 10
-num_features = 21
-
-# Create an instance of VGAE using the VariationalGCNEncoder
-vgae_model = VGAE(VariationalGCNEncoder(num_features, out_channels))
-
-# Check if GPU is available, and move the model to the appropriate device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-vgae_model = vgae_model.to(device)

@@ -44,9 +44,7 @@ parser = PDBParser(QUIET=True)
 ppb = PPBuilder()
 
 import sys
-script_directory = os.path.dirname(os.path.abspath(__file__))
-model_path = f"{script_directory}/../"
-sys.path.append(model_path)
+sys.path.append(".")
 
 from model.Auto_Fusion import *
 from model.ESM import *

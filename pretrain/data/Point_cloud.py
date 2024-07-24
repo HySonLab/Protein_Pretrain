@@ -3,6 +3,7 @@ import numpy as np
 from Bio import PDB
 import os
 import torch
+from tqdm import tqdm
 
 # Function to convert a PDB file to a point cloud
 def pdb_to_point_cloud(pdb_path, desired_num_points=2048):
@@ -33,13 +34,13 @@ def pdb_to_point_cloud(pdb_path, desired_num_points=2048):
     return coordinates
 
 # Directory containing PDB files
-pdb_directory = "/swissprot/"
+pdb_directory = "./pretrain/data/swissprot"
 pdb_files = [f for f in os.listdir(pdb_directory) if os.path.splitext(f)[1] == ".pdb"]
 print("The Number of files:", len(pdb_files))
 dataset = []
 
 # Process PDB files to create point clouds
-for i, pdb_file in enumerate(pdb_files):
+for i, pdb_file in tqdm(enumerate(pdb_files)):
     pdb_path = os.path.join(pdb_directory, pdb_file)
     data = pdb_to_point_cloud(pdb_path)
     dataset.append(data)
@@ -48,5 +49,5 @@ for i, pdb_file in enumerate(pdb_files):
 print("Done")
 
 # Save the dataset of point clouds to a file
-with open('/swissprot/pointcloud.pkl', 'wb') as f:
+with open(f'{pdb_directory}/pointclouds.pkl', 'wb') as f:
     pickle.dump(dataset, f)

@@ -7,6 +7,7 @@ from sklearn.neighbors import kneighbors_graph
 from torch_geometric.utils import negative_sampling
 from torch_geometric.data import Data
 from Bio.PDB import PDBParser, PPBuilder, Polypeptide
+from tqdm import tqdm
 
 # Initialize a PDB parser and PPBuilder for protein structure parsing
 parser = PDBParser(QUIET=True)
@@ -67,13 +68,13 @@ def pdb_to_graph(pdb_path, k_neighbors=5):
     return data
 
 # Directory containing PDB files
-pdb_directory = '/swissprot/'
+pdb_directory = "./pretrain/data/swissprot"
 pdb_files = [f for f in os.listdir(pdb_directory) if os.path.splitext(f)[1] == ".pdb"]
 print("The Number of files:", len(pdb_files))
 
 # Process PDB files to create graph data objects
 graphs = []
-for i, pdb_file in enumerate(pdb_files):
+for i, pdb_file in tqdm(enumerate(pdb_files)):
     pdb_path = os.path.join(pdb_directory, pdb_file)
     data = pdb_to_graph(pdb_path)
     if data:
@@ -82,6 +83,6 @@ for i, pdb_file in enumerate(pdb_files):
         print(f"{i + 1} files processed")
 
 # Save the dataset of graph data objects to a file
-with open('/swissprot/graphs.pkl', 'wb') as f:
+with open(f'{pdb_directory}/graphs.pkl', 'wb') as f:
     pickle.dump(graphs, f)
 print("Done")

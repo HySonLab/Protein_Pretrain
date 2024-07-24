@@ -2,7 +2,7 @@ from Utils import *
 
 def load_data(modal, folders):
     # Define the path where data is stored
-    data_path = '/Atom3D_MSP/split-by-sequence-identity-30/data'
+    data_path = './downstreamtasks/data/Atom3D_MSP/split-by-sequence-identity-30/data'
     
     # Initialize dictionaries to store data and labels for different folders
     X = {}

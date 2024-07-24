@@ -14,6 +14,15 @@ https://doi.org/10.1101/2023.11.29.569288
 * Viet Thanh Duy Nguyen
 * Truong Son Hy (Correspondent / PI)
 
+### Environment Setup
+
+```
+git clone https://github.com/HySonLab/Protein_Pretrain.git
+cd Protein_Pretrain
+conda env create -f environment.yml
+conda activate MPRL
+```
+
 ### Data Downloading
 * For pretraining:
     * Create ```/pretrain/data/swissprot``` directory.
@@ -28,8 +37,7 @@ https://doi.org/10.1101/2023.11.29.569288
 ### Data Preprocessing
 1. For pretraining, run following commands:
 ```
-cd /pretrain/data/
-python {model_name}.py
+python ./pretrain/data/{model_name}.py
 ```
 Replace {model_name} with the specific model identifier:
 * VGAE: Variational Graph Autoencoder
@@ -38,8 +46,7 @@ Replace {model_name} with the specific model identifier:
 
 2. For downstream tasks, run following commands:
 ```
-cd /downstreamtasks/data/
-python {task_name}.py
+python ./downstreamtasks/data/{task_name}.py
 ```
 Replace {task_name} with the specific task identifier:
 * PLA: Protein-ligand Binding Affinity
@@ -52,8 +59,7 @@ You have two options for using our models for pretraining: training from scratch
 #### Training from Scratch
 If you prefer to train the model yourself, run the following commands:
 ```
-cd /pretrain/
-python {model_name}.py --mode your_mode
+python ./pretrain/{model_name}.py --mode your_mode
 ```
 * Command-line Arguments
     * `--mode`: Select the mode (`train` or `test`).
@@ -63,8 +69,7 @@ For those who want to bypass the training phase, we provide pretrained model che
 ### Downstream Tasks
 * Run following commands:
 ```
-cd /downstreamtasks/
-python {task_name}.py --mode your_mode --modal your_modal 
+python ./downstreamtasks/{task_name}.py --mode your_mode --modal your_modal 
 ```
 * Command-line Arguments
     * `--modal`: Select the modality (`sequence`, `graph`, `point_cloud` or `multimodal`).

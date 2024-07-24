@@ -77,7 +77,7 @@ def main():
 
     # Parse command-line arguments
     args = parser.parse_args()
-    data_folder = f'/data/{args.dataset}'
+    data_folder = f'./downstreamtasks/data/{args.dataset}'
 
     # Read the label CSV file
     df = pd.read_csv(f'{data_folder}label.csv')

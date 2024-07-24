@@ -26,7 +26,7 @@ def main():
     args = parser.parse_args()
 
     # Specify the data folder and the label file names
-    data_folder = '/data/SCOPe1.75'
+    data_folder = './downstreamtasks/data/SCOPe1.75'
     label_file_name = ['training', 'validation', 'test_family', 'test_fold', 'test_superfamily']
 
     # Initialize dictionaries to store feature data and labels

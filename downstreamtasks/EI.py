@@ -56,7 +56,7 @@ def main():
     parser.add_argument('--mode', type=str, choices=['train', 'test'], default='train', help='Select the mode (train or test).')
     args = parser.parse_args()
 
-    data_folder = '/data/ProtDD'
+    data_folder = './downstreamtasks/data/ProtDD'
     modal = args.modality
 
     if args.mode == 'train':

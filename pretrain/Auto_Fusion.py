@@ -12,10 +12,7 @@ from torch.utils.data import Dataset
 
 import os
 import sys
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-model_path = f"{script_directory}/../"
-sys.path.append(model_path)
+sys.path.append(".")
 
 from model.Auto_Fusion import *
 
@@ -23,7 +20,7 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 PATH = f"{script_directory}/../model/Fusion.pt"
 
 # Create a summary writer for logging
-writer = SummaryWriter(log_dir="/log/Fusion")
+writer = SummaryWriter(log_dir="./log/Fusion")
 
 class MultimodalDataset(Dataset):
     def __init__(self, data):
@@ -36,7 +33,7 @@ class MultimodalDataset(Dataset):
         return self.data[index]
 
 # Load the preprocessed data
-with open('/data/swissprot/fusion.pkl', 'rb') as f:
+with open('./pretrain/data/swissprot/fusion.pkl', 'rb') as f:
     print("Loading data ...")
     dataset = pickle.load(f)
 print("Data loaded successfully.")
@@ -71,10 +68,9 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Define loss function (Mean Squared Error) and optimizer (Adam)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(fusion_model.parameters(), lr=0.001)
 
 # Training function
-def train():
+def train(fusion_model, train_loader, optimizer, device):
     fusion_model.train()
     total_loss = 0.0
 
@@ -92,7 +88,7 @@ def train():
     return average_loss
 
 # Validation function
-def validation():
+def validation(fusion_model, valid_loader, device):
     fusion_model.eval()
     total_val_loss = 0.0
 
@@ -108,7 +104,7 @@ def validation():
     return average_val_loss
 
 # Test function
-def test(fusion_model):
+def test_model(fusion_model, test_loader, device):
     fusion_model.eval()
     total_test_loss = 0.0
 
@@ -128,14 +124,19 @@ def main():
     parser.add_argument("--mode", choices=["train", "test"], help="Select mode: train or test", required=True)
     args = parser.parse_args()
 
-    # Your existing code here
+    input_features = 640 * 3
+    latent_dim = 1024
+    fusion_model = AutoFusion(latent_dim, input_features)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    optimizer = optim.Adam(fusion_model.parameters(), lr=0.001)
+    fusion_model = fusion_model.to(device)
 
     if args.mode == "train":
         # Training mode
         num_epochs = 100
         for epoch in range(num_epochs):
-            train_loss = train()
-            val_loss = validation()
+            train_loss = train(fusion_model, train_loader, optimizer, device) 
+            val_loss = validation(fusion_model, valid_loader, device)
             writer.add_scalar('Loss/train', train_loss, epoch)
             writer.add_scalar('Loss/valid', val_loss, epoch)
             print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {train_loss:.4f} - Validation Loss: {val_loss:.4f}")
@@ -148,7 +149,7 @@ def main():
         # Load the saved model
         fusion_model = torch.load(PATH)
         # Evaluate the model on the test dataset
-        test_loss = test(fusion_model)
+        test_loss = test_model(fusion_model, test_loader, device)
         print(f"Average MSE on Test Set: {test_loss:.4f}")
 
 if __name__ == "__main__":
