@@ -31,7 +31,7 @@ conda activate MPRL
 * For downstream tasks:
     * Create ```downstreamtasks/data/{dataset_name}``` directory, where dataset_name is in {Atom3D_MSP, DAVIS, KIBA, PDBbind, SCOPe1.75, D&D}.
     * Download the data at: [Atom3D_MSP](https://zenodo.org/records/4962515/files/MSP-split-by-sequence-identity-30.tar.gz), [DAVIS](https://drive.google.com/file/d/1kobzvO9aZcCAOWqXodEZi9xbr4PuGHYY/view?usp=drive_link),
-    [KIBA](https://drive.google.com/file/d/1X8LQZYjShhKo0YOkTZ-zfzftN1V-Wbyx/view?usp=drive_link), [PDBbind](), [SCOPe1.75](https://drive.google.com/uc?export=download&id=1chZAkaZlEBaOcjHQ3OUOdiKZqIn36qar), [D&D](https://drive.google.com/uc?export=download&id=1KTs5cUYhG60C6WagFp4Pg8xeMgvbLfhB).
+    [KIBA](https://drive.google.com/file/d/1X8LQZYjShhKo0YOkTZ-zfzftN1V-Wbyx/view?usp=drive_link), [PDBbind](http://pdbbind.org.cn/download.php), [SCOPe1.75](https://drive.google.com/uc?export=download&id=1chZAkaZlEBaOcjHQ3OUOdiKZqIn36qar), [D&D](https://drive.google.com/uc?export=download&id=1KTs5cUYhG60C6WagFp4Pg8xeMgvbLfhB).
     * Move the downloaded files into the ```downstreamtasks/data/{dataset_name}``` directory and extract it.
 
 ### Data Preprocessing
